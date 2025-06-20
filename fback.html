@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feedback</title>
+  <link rel="stylesheet" href="./CSS/fback.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="./images/logo.png" class="logo" alt="Logo">
+    </div>
+
+    <form id="feedbackForm">
+      <div id="feedback-container"></div>
+      <input type="hidden" name="Quality_of_Service" id="Quality_of_Service">
+      <input type="hidden" name="Cleanliness" id="Cleanliness">
+      <input type="hidden" name="Quality_of_Products" id="Quality_of_Products">
+      <input type="hidden" name="Ambience" id="Ambience">
+      <input type="hidden" name="Overall_Experience" id="Overall_Experience">
+
+      <button type="button" class="continue-btn" onclick="goToForm()">Continue</button>
+    </form>
+  </div>
+
+  <script>
+    const questions = [
+      "Quality of Service",
+      "Cleanliness",
+      "Quality of Products",
+      "Ambience",
+      "Overall Experience"
+    ];
+
+    const emojis = [
+      { label: "Highly Dissatisfied", static: "./images/vpoor.webp", animated: "./images/vpoor.gif" },
+      { label: "Dissatisfied", static: "./images/poor.webp", animated: "./images/poor.gif" },
+      { label: "Neither/Nor Satisfied", static: "./images/smile.webp", animated: "./images/smile.gif" },
+      { label: "Satisfied", static: "./images/good.webp", animated: "./images/good.gif" },
+      { label: "Excellent", static: "./images/excellent.webp", animated: "./images/excellent.gif" }
+    ];
+
+    const container = document.getElementById("feedback-container");
+
+    questions.forEach(question => {
+      const categoryDiv = document.createElement("div");
+      categoryDiv.className = "category";
+      categoryDiv.dataset.category = question;
+
+      categoryDiv.innerHTML = `<h2>${question}</h2><div class="emoji-row"></div>`;
+      const emojiRow = categoryDiv.querySelector(".emoji-row");
+
+      emojis.forEach(emoji => {
+        const emojiDiv = document.createElement("div");
+        emojiDiv.className = "emoji";
+        emojiDiv.onclick = () => selectEmoji(emojiDiv);
+
+        emojiDiv.innerHTML = `
+          <img src="${emoji.static}" data-static="${emoji.static}" data-animated="${emoji.animated}" alt="${emoji.label}">
+          <p>${emoji.label}</p>
+        `;
+
+        emojiRow.appendChild(emojiDiv);
+      });
+
+      container.appendChild(categoryDiv);
+    });
+    function selectEmoji(selected) {
+  const row = selected.parentElement;
+  const categoryDiv = selected.closest('.category');
+  const category = categoryDiv.dataset.category;
+  const emojis = row.querySelectorAll('.emoji');
+
+  emojis.forEach(emoji => {
+    const img = emoji.querySelector('img');
+    const isSelected = emoji === selected;
+    emoji.classList.toggle('selected', isSelected);
+    emoji.classList.toggle('faded', !isSelected);
+    img.src = isSelected ? img.dataset.animated : img.dataset.static;
+  });
+  if (categoryDiv.classList.contains('error')) {
+    categoryDiv.classList.remove('error');
+  }
+  const selectedLabel = selected.querySelector('p').textContent;
+  const feedback = JSON.parse(localStorage.getItem("emojiFeedback") || "{}");
+  feedback[category] = selectedLabel;
+  localStorage.setItem("emojiFeedback", JSON.stringify(feedback));
+}
+
+function goToForm() {
+  let allSelected = true;
+
+  questions.forEach(q => {
+    const categoryDiv = document.querySelector(`.category[data-category="${q}"]`);
+    const selectedEmoji = categoryDiv.querySelector('.emoji.selected');
+
+    if (!selectedEmoji) {
+      categoryDiv.classList.add('error');
+      allSelected = false;
+    } else {
+      categoryDiv.classList.remove('error');
+
+      const selectedLabel = selectedEmoji.querySelector('p').textContent;
+      const feedback = JSON.parse(localStorage.getItem("emojiFeedback") || "{}");
+      feedback[q] = selectedLabel;
+      localStorage.setItem("emojiFeedback", JSON.stringify(feedback));
+
+      const inputId = q.replace(/\s+/g, "_");
+      const input = document.getElementById(inputId);
+      if (input) input.value = selectedLabel;
+    }
+  });
+
+  if (allSelected) {
+    window.location.href = "form.html";
+  }
+}
+
+
+
+  </script>
+</body>
+</html>

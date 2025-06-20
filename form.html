@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Customer Info</title>
+  <link rel="stylesheet" href="./CSS/form.css">
+</head>
+<body>
+
+  <div class="form-container">
+    <div class="header-section">
+      <img src="./images/logo.png" alt="Logo">
+      <h2>
+        The happiest place for <br>little explorers!
+      </h2>
+    </div>
+
+    <form id="feedbackForm">
+      <input type="text" name="name" placeholder="Full name *" required />
+      <input type="tel" name="mobile" placeholder="+91  mobile number *" pattern="[0-9]{10}" required />
+      <select name="age_group" required>
+        <option value="" disabled selected>Select Age Group</option>
+        <option value="Below 18">Below 18</option>
+        <option value="18-25">18–25</option>
+        <option value="26-40">26–40</option>
+        <option value="41-60">41–60</option>
+        <option value="60+">60+</option>
+      </select>
+      <div class="comments"><input type="comments" placeholder="Comments"/></div>
+
+      <input type="hidden" name="Quality_of_Service" id="Quality_of_Service" />
+      <input type="hidden" name="Cleanliness" id="Cleanliness" />
+      <input type="hidden" name="Quality_of_Products" id="Quality_of_Products" />
+      <input type="hidden" name="Ambience" id="Ambience" />
+      <input type="hidden" name="Overall_Experience" id="Overall_Experience" />
+
+      <div class="btn">
+      <button type="submit">Submit your feedback</button>
+        </div>
+    </form>
+  </div>
+    <div class="thankyou-popup" id="thankyouPopup">
+    <div class="thankyou-box">
+      <p>Thank you for your feedback!</p>
+    </div>
+  </div>
+ <script>
+    const feedback = JSON.parse(localStorage.getItem("emojiFeedback") || "{}");
+    for (const key in feedback) {
+      const id = key.replace(/\s+/g, "_");
+      const input = document.getElementById(id);
+      if (input) input.value = feedback[key];
+    }
+
+    document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      fetch('submit_feedback.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("thankyouPopup").style.display = "flex";
+        console.log(data);
+        this.reset();
+        localStorage.removeItem("emojiFeedback");
+
+        setTimeout(() => {
+          document.getElementById("thankyouPopup").style.display = "none";
+        }, 2000);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert("There was an error submitting the form.");
+      });
+    });
+  </script>
+
+</body>
+</html>
